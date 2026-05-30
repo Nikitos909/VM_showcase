@@ -1,232 +1,151 @@
 <!DOCTYPE html>
 <html lang="en-us">
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden; /* Критично! */
+            position: fixed; /* Критично для iOS */
+            touch-action: none; /* Запрет жестов браузера на Canvas */
+            -webkit-overflow-scrolling: touch; /* Устарело, но не помешает */
+        }
+
+        canvas {
+            display: block; /* Убирает полосу прокрутки снизу */
+            width: 100%;
+            height: 100%;
+        }
+    </style>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Unity WebGL Player | VirtualMuseum</title>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
-
-    <!-- Дополнительные мета-теги для iOS Safari -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#000000">
 </head>
-<body>
+  <body>
     <div id="unity-container" class="unity-desktop">
-        <canvas id="unity-canvas" width=960 height=600 tabindex="-1"></canvas>
-        <div id="unity-loading-bar">
-            <div id="unity-logo"></div>
-            <div id="unity-progress-bar-empty">
-                <div id="unity-progress-bar-full"></div>
-            </div>
+      <canvas id="unity-canvas" width=960 height=600 tabindex="-1"></canvas>
+      <div id="unity-loading-bar">
+        <div id="unity-logo"></div>
+        <div id="unity-progress-bar-empty">
+          <div id="unity-progress-bar-full"></div>
         </div>
-        <div id="unity-warning"> </div>
-        <div id="unity-footer">
-            <div id="unity-webgl-logo"></div>
-            <div id="unity-fullscreen-button"></div>
-            <div id="unity-build-title">VirtualMuseum</div>
-        </div>
+      </div>
+      <div id="unity-warning"> </div>
+      <div id="unity-footer">
+        <div id="unity-webgl-logo"></div>
+        <div id="unity-fullscreen-button"></div>
+        <div id="unity-build-title">VirtualMuseum</div>
+      </div>
     </div>
-    <script>var container = document.querySelector("#unity-container");
-        var canvas = document.querySelector("#unity-canvas");
-        var loadingBar = document.querySelector("#unity-loading-bar");
-        var progressBarFull = document.querySelector("#unity-progress-bar-full");
-        var fullscreenButton = document.querySelector("#unity-fullscreen-button");
-        var warningBanner = document.querySelector("#unity-warning");
+    <script>
 
-        // Определение устройства и браузера
-        var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-            (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-        var isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-        var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      var container = document.querySelector("#unity-container");
+      var canvas = document.querySelector("#unity-canvas");
+      var loadingBar = document.querySelector("#unity-loading-bar");
+      var progressBarFull = document.querySelector("#unity-progress-bar-full");
+      var fullscreenButton = document.querySelector("#unity-fullscreen-button");
+      var warningBanner = document.querySelector("#unity-warning");
 
-        // Shows a temporary message banner/ribbon for a few seconds, or
-        // a permanent error message on top of the canvas if type=='error'.
-        // If type=='warning', a yellow highlight color is used.
-        // Modify or remove this function to customize the visually presented
-        // way that non-critical warnings and error messages are presented to the
-        // user.
-        function unityShowBanner(msg, type) {
-            function updateBannerVisibility() {
-                warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
-            }
-            var div = document.createElement('div');
-            div.innerHTML = msg;
-            warningBanner.appendChild(div);
-            if (type == 'error') div.style = 'background: red; padding: 10px;';
-            else {
-                if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
-                setTimeout(function () {
-                    warningBanner.removeChild(div);
-                    updateBannerVisibility();
-                }, 5000);
-            }
+      // Shows a temporary message banner/ribbon for a few seconds, or
+      // a permanent error message on top of the canvas if type=='error'.
+      // If type=='warning', a yellow highlight color is used.
+      // Modify or remove this function to customize the visually presented
+      // way that non-critical warnings and error messages are presented to the
+      // user.
+      function unityShowBanner(msg, type) {
+        function updateBannerVisibility() {
+          warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
+        }
+        var div = document.createElement('div');
+        div.innerHTML = msg;
+        warningBanner.appendChild(div);
+        if (type == 'error') div.style = 'background: red; padding: 10px;';
+        else {
+          if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
+          setTimeout(function() {
+            warningBanner.removeChild(div);
             updateBannerVisibility();
+          }, 5000);
         }
+        updateBannerVisibility();
+      }
 
-        var buildUrl = "Build";
-        var loaderUrl = buildUrl + "/Test.loader.js";
-        var config = {
-            dataUrl: buildUrl + "/Test.data",
-            frameworkUrl: buildUrl + "/Test.framework.js",
-            codeUrl: buildUrl + "/Test.wasm",
-            streamingAssetsUrl: "StreamingAssets",
-            companyName: "DefaultCompany",
-            productName: "VirtualMuseum",
-            productVersion: "0.1.0",
-            showBanner: unityShowBanner,
-        };
+      var buildUrl = "Build";
+      var loaderUrl = buildUrl + "/Test.loader.js";
+      var config = {
+        dataUrl: buildUrl + "/Test.data",
+        frameworkUrl: buildUrl + "/Test.framework.js",
+        codeUrl: buildUrl + "/Test.wasm",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "DefaultCompany",
+        productName: "VirtualMuseum",
+        productVersion: "0.1.0",
+        showBanner: unityShowBanner,
+      };
 
-        // By default, Unity keeps WebGL canvas render target size matched with
-        // the DOM size of the canvas element (scaled by window.devicePixelRatio)
-        // Set this to false if you want to decouple this synchronization from
-        // happening inside the engine, and you would instead like to size up
-        // the canvas DOM size and WebGL render target sizes yourself.
-        // config.matchWebGLToCanvasSize = false;
+      // By default, Unity keeps WebGL canvas render target size matched with
+      // the DOM size of the canvas element (scaled by window.devicePixelRatio)
+      // Set this to false if you want to decouple this synchronization from
+      // happening inside the engine, and you would instead like to size up
+      // the canvas DOM size and WebGL render target sizes yourself.
+      // config.matchWebGLToCanvasSize = false;
 
-        if (isMobile) {
-            // Mobile device style: fill the whole browser client area with the game canvas:
+      // If you would like all file writes inside Unity Application.persistentDataPath
+      // directory to automatically persist so that the contents are remembered when
+      // the user revisits the site the next time, uncomment the following line:
+      // config.autoSyncPersistentDataPath = true;
+      // This autosyncing is currently not the default behavior to avoid regressing
+      // existing user projects that might rely on the earlier manual
+      // JS_FileSystem_Sync() behavior, but in future Unity version, this will be
+      // expected to change.
 
-            var meta = document.createElement('meta');
-            meta.name = 'viewport';
-            meta.content = 'width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, shrink-to-fit=yes, viewport-fit=cover';
-            document.getElementsByTagName('head')[0].appendChild(meta);
-            container.className = "unity-mobile";
-            canvas.className = "unity-mobile";
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        // Mobile device style: fill the whole browser client area with the game canvas:
 
-            // To lower canvas resolution on mobile devices to gain some
-            // performance, uncomment the following line:
-            // config.devicePixelRatio = 1;
+        var meta = document.createElement('meta');
+        meta.name = 'viewport';
+        meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
+        document.getElementsByTagName('head')[0].appendChild(meta);
+        container.className = "unity-mobile";
+        canvas.className = "unity-mobile";
 
-        } else {
-            // Desktop style: Render the game canvas in a window that can be maximized to fullscreen:
+        // To lower canvas resolution on mobile devices to gain some
+        // performance, uncomment the following line:
+        // config.devicePixelRatio = 1;
 
-            canvas.style.width = "960px";
-            canvas.style.height = "600px";
-        }
 
-        canvas.style.background = "url('" + buildUrl + "/Test.jpg') center / cover";
-        loadingBar.style.display = "block";
+      } else {
+        // Desktop style: Render the game canvas in a window that can be maximized to fullscreen:
 
-        // ============ БЛОКИРОВКА ЖЕСТОВ ДЛЯ SAFARI И МОБИЛЬНЫХ ============
-        if (isMobile) {
-            // Запрет зума двойным тапом
-            document.addEventListener('dblclick', function (e) {
-                e.preventDefault();
-            });
+        canvas.style.width = "960px";
+        canvas.style.height = "600px";
+      }
 
-            // Блокировка жестов Safari (pinch-zoom, etc.)
-            document.addEventListener('gesturestart', function (e) {
-                e.preventDefault();
-            });
-            document.addEventListener('gesturechange', function (e) {
-                e.preventDefault();
-            });
-            document.addEventListener('gestureend', function (e) {
-                e.preventDefault();
-            });
+      canvas.style.background = "url('" + buildUrl + "/Test.jpg') center / cover";
+      loadingBar.style.display = "block";
 
-            // Предотвращение pull-to-refresh в Safari
-            document.addEventListener('touchmove', function (e) {
-                if (e.target === canvas || canvas.contains(e.target)) {
-                    e.preventDefault();
-                }
-            }, { passive: false });
-
-            // Запрет контекстного меню
-            canvas.addEventListener('contextmenu', function (e) {
-                e.preventDefault();
-            });
-
-            // Блокировка выделения текста
-            canvas.style.webkitTouchCallout = 'none';
-            canvas.style.webkitUserSelect = 'none';
-            canvas.style.userSelect = 'none';
-            canvas.style.touchAction = 'none';
-        }
-
-        // ============ ФИКС WebAssembly ДЛЯ SAFARI ============
-        if (typeof WebAssembly !== 'undefined' && isSafari) {
-            var originalMemory = WebAssembly.Memory;
-            WebAssembly.Memory = function (descriptor) {
-                if (descriptor.initial > 256) {
-                    console.warn('Safari: уменьшаем initial memory с ' + descriptor.initial + ' до 256 страниц');
-                    descriptor.initial = 256;
-                }
-                if (descriptor.maximum && descriptor.maximum > 512) {
-                    descriptor.maximum = 512;
-                }
-                return new originalMemory(descriptor);
-            };
-        }
-
-        // ============ ЗАГРУЗКА UNITY ============
-        var script = document.createElement("script");
-        script.src = loaderUrl;
-        script.onload = () => {
-            createUnityInstance(canvas, config, (progress) => {
-                progressBarFull.style.width = 100 * progress + "%";
-            }).then((unityInstance) => {
+      var script = document.createElement("script");
+      script.src = loaderUrl;
+      script.onload = () => {
+        createUnityInstance(canvas, config, (progress) => {
+          progressBarFull.style.width = 100 * progress + "%";
+              }).then((unityInstance) => {
                 loadingBar.style.display = "none";
                 fullscreenButton.onclick = () => {
-                    unityInstance.SetFullscreen(1);
+                  unityInstance.SetFullscreen(1);
                 };
+              }).catch((message) => {
+                alert(message);
+              });
+            };
 
-                // Фикс для фокуса в Safari iOS
-                if (isIOS) {
-                    setTimeout(function () {
-                        canvas.focus();
-                        window.focus();
-                    }, 100);
-                }
+      document.body.appendChild(script);
 
-                // Обработка сворачивания/разворачивания Safari
-                document.addEventListener('visibilitychange', function () {
-                    if (!document.hidden && isIOS) {
-                        setTimeout(function () {
-                            canvas.focus();
-                        }, 100);
-                    }
-                });
-
-            }).catch((message) => {
-                // Улучшенная обработка ошибок для Safari
-                var errorMsg = message;
-                if (isSafari || isIOS) {
-                    if (message.includes("out of memory") || message.includes("Memory")) {
-                        errorMsg = "Недостаточно памяти в Safari. Пожалуйста, закройте другие вкладки и перезагрузите страницу.";
-                    } else if (message.includes("WebAssembly")) {
-                        errorMsg = "Ваша версия Safari не полностью поддерживает WebAssembly. Попробуйте обновить iOS/Safari.";
-                    }
-                }
-                alert(errorMsg);
-            });
-        };
-
-        document.body.appendChild(script);
-
-        // ============ ДОПОЛНИТЕЛЬНЫЕ ФИКСЫ ДЛЯ iOS ============
-        if (isIOS) {
-            // Фикс для iOS 15+ (проблема с touch events)
-            window.addEventListener('touchstart', function () { }, { passive: true });
-
-            // Обработка изменения ориентации
-            window.addEventListener('orientationchange', function () {
-                setTimeout(function () {
-                    canvas.style.width = '100%';
-                    canvas.style.height = '100%';
-                }, 300);
-            });
-        }
-
-        // Логирование для отладки
-        console.log('Платформа:', {
-            isIOS: isIOS,
-            isSafari: isSafari,
-            isMobile: isMobile,
-            userAgent: navigator.userAgent
-        });</script>
-</body>
+    </script>
+  </body>
 </html>
